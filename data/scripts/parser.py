@@ -3,6 +3,11 @@ import re
 from collections import defaultdict
 from typing import DefaultDict, Dict, List, Set, Tuple
 
+ASPELL = 1
+HOLBROOK = 2
+BIRKBECK = 4
+WIKIPEDIA = 8
+
 
 class Parser:
     """Parser class to read specific .dat files.
@@ -114,12 +119,6 @@ class HolbrookParser(DollarParser):
 
     def parse_wrongs(self, wrongs: str) -> List[str]:
         return [" ".join(wrong.split(" ")[:-1]) for wrong in wrongs.split("\n")]
-
-
-ASPELL = 1
-HOLBROOK = 2
-BIRKBECK = 4
-WIKIPEDIA = 8
 
 
 def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
