@@ -130,10 +130,12 @@ class HolbrookParser(DollarParser):
             " ".join(wrong.split(" ")[:-1]) for wrong in wrongs.split("\n") if wrong
         ]
 
+
 WIKIPEDIA_PARSER = WikipediaParser("data/raw/wikipedia.dat")
 BIRKBECK_PARSER = DollarParser("data/raw/birkbeck.dat")
 HOLBROOK_PARSER = HolbrookParser("data/raw/holbrook.dat")
 ASPELL_PARSER = DollarParser("data/raw/aspell.dat")
+
 
 def merge(d1: DefaultDict[str, Set[str]], d2: DefaultDict[str, Set[str]]):
     """Merge values of `d2` into `d1`."""
@@ -213,10 +215,8 @@ def parse_all(write: bool = False) -> Dict[str, Tuple[str]]:
 def all_combinations():
     """Return a mapping of `data_flag` to `parse(data_flag)`,
     with all possible combinations of misspellings data."""
-    return {
-        i: parse(i, write=False)
-        for i in range(1, 16)
-    }
+    return {i: parse(i, write=False) for i in range(1, 16)}
+
 
 if __name__ == "__main__":
     parse_all(write=True)
