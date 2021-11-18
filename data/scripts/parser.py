@@ -143,7 +143,9 @@ def merge(d1: DefaultDict[str, Set[str]], d2: DefaultDict[str, Set[str]]):
         d1[key] |= value
 
 
-def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
+def parse(
+    data_flag: int, write: bool = False, verbose: bool = False
+) -> Dict[str, Tuple[str]]:
     """Parse a set of the raw data, and optionally write to `processed/parsed.json`.
 
     :param data_flag: An integer indicating which datasets to use,
@@ -151,6 +153,8 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
     :type data_flag: int
     :param write: Whether to write output to `processed/parsed.json`, defaults to False
     :type write: bool, optional
+    :param verbose: Whether to print additional information. defaults to False
+    :type verbose: bool, optional
     :return: The parsed data as a mapping from misspellings to a tuple of potential
         corrections.
     :rtype: Dict[str, Tuple[str]]
@@ -159,34 +163,38 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
 
     if data_flag // WIKIPEDIA:
         merge(parsed_combined, WIKIPEDIA_PARSER.parse())
-        print(
-            "Added Wikipedia data: "
-            f"Corpus now contains {len(parsed_combined)} misspellings."
-        )
+        if verbose:
+            print(
+                "Added Wikipedia data: "
+                f"Corpus now contains {len(parsed_combined)} misspellings."
+            )
         data_flag %= WIKIPEDIA
 
     if data_flag // BIRKBECK:
         merge(parsed_combined, BIRKBECK_PARSER.parse())
-        print(
-            "Added Birkbeck data: "
-            f"Corpus now contains {len(parsed_combined)} misspellings."
-        )
+        if verbose:
+            print(
+                "Added Birkbeck data: "
+                f"Corpus now contains {len(parsed_combined)} misspellings."
+            )
         data_flag %= BIRKBECK
 
     if data_flag // HOLBROOK:
         merge(parsed_combined, HOLBROOK_PARSER.parse())
-        print(
-            "Added Holbrook data: "
-            f"Corpus now contains {len(parsed_combined)} misspellings."
-        )
+        if verbose:
+            print(
+                "Added Holbrook data: "
+                f"Corpus now contains {len(parsed_combined)} misspellings."
+            )
         data_flag %= HOLBROOK
 
     if data_flag // ASPELL:
         merge(parsed_combined, ASPELL_PARSER.parse())
-        print(
-            "Added Aspell data: "
-            f"Corpus now contains {len(parsed_combined)} misspellings."
-        )
+        if verbose:
+            print(
+                "Added Aspell data: "
+                f"Corpus now contains {len(parsed_combined)} misspellings."
+            )
         data_flag %= ASPELL
 
     parsed_combined = {
@@ -200,24 +208,26 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
     return parsed_combined
 
 
-def parse_all(write: bool = False) -> Dict[str, Tuple[str]]:
+def parse_all(write: bool = False, verbose: bool = False) -> Dict[str, Tuple[str]]:
     """Parse all raw data, and optionally write to `processed/parsed.json`.
 
     :param write: Whether to write output to `processed/parsed.json`, defaults to False
     :type write: bool, optional
+    :param verbose: Whether to print additional information. defaults to False
+    :type verbose: bool, optional
     :return: The parsed data as a mapping from misspellings to a tuple of potential
         corrections.
     :rtype: Dict[str, Tuple[str]]
     """
-    return parse(ASPELL + WIKIPEDIA + BIRKBECK + HOLBROOK, write=write)
+    return parse(ASPELL + WIKIPEDIA + BIRKBECK + HOLBROOK, write=write, verbose=verbose)
 
 
 def all_combinations():
     """Return a mapping of `data_flag` to `parse(data_flag)`,
     with all possible combinations of misspellings data."""
-    return {i: parse(i, write=False) for i in range(1, 16)}
+    return {i: parse(i, write=False, verbose=False) for i in range(1, 16)}
 
 
 if __name__ == "__main__":
-    parse_all(write=True)
+    parse_all(write=True, verbose=True)
     # output = all_combinations()
