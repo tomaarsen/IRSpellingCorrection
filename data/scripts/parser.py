@@ -17,7 +17,7 @@ class Parser:
     in `pattern`. Fills out the mapping from misspellings
     to potential correct values.
     Designed to be overridden by subclasses.
-    
+
     TODO: Handle "_" vs " " to represent spaces
     """
 
@@ -120,13 +120,16 @@ class HolbrookParser(DollarParser):
     """
 
     def parse_wrongs(self, wrongs: str) -> List[str]:
-        return [" ".join(wrong.split(" ")[:-1]) for wrong in wrongs.split("\n")]
+        return [
+            " ".join(wrong.split(" ")[:-1]) for wrong in wrongs.split("\n") if wrong
+        ]
 
 
 def merge(d1: DefaultDict[str, Set[str]], d2: DefaultDict[str, Set[str]]):
     """Merge values of `d2` into `d1`."""
     for key, value in d2.items():
         d1[key] |= value
+
 
 def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
     """Parse a set of the raw data, and optionally write to `processed/parsed.json`.
@@ -174,7 +177,9 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
         )
         data_flag %= ASPELL
 
-    parsed_combined = {key: tuple(sorted(value)) for key, value in parsed_combined.items()}
+    parsed_combined = {
+        key: tuple(sorted(value)) for key, value in parsed_combined.items()
+    }
 
     if write:
         with open(r"data/processed/parsed.json", "w", encoding="utf8") as f:
