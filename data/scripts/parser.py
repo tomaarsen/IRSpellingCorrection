@@ -250,13 +250,23 @@ def parse_all(
     )
 
 
-def all_combinations():
+def all_combinations(apply_filter: bool = True) -> Dict[int, Dict[str, Tuple[str]]]:
     """Return a mapping of `data_flag` to `parse(data_flag)`,
     with all possible combinations of misspellings data.
 
     TODO: Consider an option to start at 0, for no misspellings.
+
+    :param apply_filter: Whether to apply a manual filter from `data/raw/filter.dat` on the
+        processed data. Defaults to True
+    :type apply_filter: bool, optional
+    :return: A mapping of `data_flag` integers to the parsed data as a mapping from misspellings
+        to a tuple of potential corrections. For all possible combinations of misspelling corpora.
+    :rtype: Dict[int, Dict[str, Tuple[str]]]
     """
-    return {i: parse(i, write=False, verbose=False) for i in range(1, 16)}
+    return {
+        i: parse(i, write=False, verbose=False, apply_filter=apply_filter)
+        for i in range(1, 16)
+    }
 
 
 if __name__ == "__main__":
