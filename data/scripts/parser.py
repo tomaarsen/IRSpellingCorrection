@@ -17,6 +17,8 @@ class Parser:
     in `pattern`. Fills out the mapping from misspellings
     to potential correct values.
     Designed to be overridden by subclasses.
+    
+    TODO: Handle "_" vs " " to represent spaces
     """
 
     def __init__(self, filename: str, pattern: re.Pattern):
