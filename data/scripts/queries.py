@@ -24,7 +24,7 @@ def fix_queries(data_flag: int, queries: List[str], parsed_errors: Dict[str, Tup
 
 if __name__ == "__main__":
     with open(r"data/queries/docv2_train_queries.tsv", "r", encoding="utf8") as f:
-        queries = csv.reader(f, delimiter="\t")
+        queries = list(csv.reader(f, delimiter="\t"))
         parsed_errors_dict = all_combinations()
         for data_flag, parsed_errors in parsed_errors_dict.items():
             fix_queries(data_flag, queries, parsed_errors)
