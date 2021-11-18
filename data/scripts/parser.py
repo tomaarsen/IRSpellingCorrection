@@ -51,6 +51,9 @@ class Parser:
 
         :rtype: DefaultDict[str, Set[str]]
         """
+        if self.parsed:
+            return self.parsed
+
         with open(self.filename, "r", encoding="utf8") as f:
             for match in self.pattern.finditer(f.read()):
                 corrects = self.parse_corrects(match.group("correct"))
@@ -128,13 +131,24 @@ class HolbrookParser(DollarParser):
         ]
 
 
+WIKIPEDIA_PARSER = WikipediaParser("data/raw/wikipedia.dat")
+BIRKBECK_PARSER = DollarParser("data/raw/birkbeck.dat")
+HOLBROOK_PARSER = HolbrookParser("data/raw/holbrook.dat")
+ASPELL_PARSER = DollarParser("data/raw/aspell.dat")
+
+
 def merge(d1: DefaultDict[str, Set[str]], d2: DefaultDict[str, Set[str]]):
     """Merge values of `d2` into `d1`."""
     for key, value in d2.items():
         d1[key] |= value
 
 
-def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
+def parse(
+    data_flag: int,
+    write: bool = False,
+    verbose: bool = False,
+    apply_filter: bool = True,
+) -> Dict[str, Tuple[str]]:
     """Parse a set of the raw data, and optionally write to `processed/parsed.json`.
 
     :param data_flag: An integer indicating which datasets to use,
@@ -142,6 +156,11 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
     :type data_flag: int
     :param write: Whether to write output to `processed/parsed.json`, defaults to False
     :type write: bool, optional
+    :param verbose: Whether to print additional information. defaults to False
+    :type verbose: bool, optional
+    :param apply_filter: Whether to apply a manual filter from `data/raw/filter.dat` on the
+        processed data. This is very much recommended. defaults to True
+    :type apply_filter: bool, optional
     :return: The parsed data as a mapping from misspellings to a tuple of potential
         corrections.
     :rtype: Dict[str, Tuple[str]]
@@ -149,40 +168,55 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
     parsed_combined = defaultdict(set)
 
     if data_flag // WIKIPEDIA:
-        merge(parsed_combined, WikipediaParser("data/raw/wikipedia.dat").parse())
-        print(
-            "Added Wikipedia data: "
-            f"Corpus now contains {len(parsed_combined)} misspellings."
-        )
+        merge(parsed_combined, WIKIPEDIA_PARSER.parse())
+        if verbose:
+            print(
+                "Added Wikipedia data: "
+                f"Corpus now contains {len(parsed_combined)} misspellings."
+            )
         data_flag %= WIKIPEDIA
 
     if data_flag // BIRKBECK:
-        merge(parsed_combined, DollarParser("data/raw/birkbeck.dat").parse())
-        print(
-            "Added Birkbeck data: "
-            f"Corpus now contains {len(parsed_combined)} misspellings."
-        )
+        merge(parsed_combined, BIRKBECK_PARSER.parse())
+        if verbose:
+            print(
+                "Added Birkbeck data: "
+                f"Corpus now contains {len(parsed_combined)} misspellings."
+            )
         data_flag %= BIRKBECK
 
     if data_flag // HOLBROOK:
-        merge(parsed_combined, HolbrookParser("data/raw/holbrook.dat").parse())
-        print(
-            "Added Holbrook data: "
-            f"Corpus now contains {len(parsed_combined)} misspellings."
-        )
+        merge(parsed_combined, HOLBROOK_PARSER.parse())
+        if verbose:
+            print(
+                "Added Holbrook data: "
+                f"Corpus now contains {len(parsed_combined)} misspellings."
+            )
         data_flag %= HOLBROOK
 
     if data_flag // ASPELL:
-        merge(parsed_combined, DollarParser("data/raw/aspell.dat").parse())
-        print(
-            "Added Aspell data: "
-            f"Corpus now contains {len(parsed_combined)} misspellings."
-        )
+        merge(parsed_combined, ASPELL_PARSER.parse())
+        if verbose:
+            print(
+                "Added Aspell data: "
+                f"Corpus now contains {len(parsed_combined)} misspellings."
+            )
         data_flag %= ASPELL
 
     parsed_combined = {
         key: tuple(sorted(value)) for key, value in parsed_combined.items()
     }
+
+    if apply_filter:
+        with open(r"data/raw/filter.dat", "r", encoding="utf8") as f:
+            for line in f.readlines():
+                line = line.strip()
+                del parsed_combined[line]
+            if verbose:
+                print(
+                    "Removed filtered data: "
+                    f"Corpus now contains {len(parsed_combined)} misspellings."
+                )
 
     if write:
         with open(r"data/processed/parsed.json", "w", encoding="utf8") as f:
@@ -191,17 +225,39 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
     return parsed_combined
 
 
-def parse_all(write: bool = False) -> Dict[str, Tuple[str]]:
+def parse_all(
+    write: bool = False, verbose: bool = False, apply_filter: bool = True
+) -> Dict[str, Tuple[str]]:
     """Parse all raw data, and optionally write to `processed/parsed.json`.
 
     :param write: Whether to write output to `processed/parsed.json`, defaults to False
     :type write: bool, optional
+    :param verbose: Whether to print additional information. defaults to False
+    :type verbose: bool, optional
+    :param apply_filter: Whether to apply a manual filter from `data/raw/filter.dat` on the
+        processed data. This is very much recommended. defaults to True
+    :type apply_filter: bool, optional
     :return: The parsed data as a mapping from misspellings to a tuple of potential
         corrections.
     :rtype: Dict[str, Tuple[str]]
     """
-    return parse(ASPELL + WIKIPEDIA + BIRKBECK + HOLBROOK, write=write)
+    return parse(
+        ASPELL + WIKIPEDIA + BIRKBECK + HOLBROOK,
+        write=write,
+        verbose=verbose,
+        apply_filter=apply_filter,
+    )
+
+
+def all_combinations():
+    """Return a mapping of `data_flag` to `parse(data_flag)`,
+    with all possible combinations of misspellings data.
+
+    TODO: Consider an option to start at 0, for no misspellings.
+    """
+    return {i: parse(i, write=False, verbose=False) for i in range(1, 16)}
 
 
 if __name__ == "__main__":
-    parse_all(write=True)
+    parse_all(write=True, verbose=True)
+    # output = all_combinations()
