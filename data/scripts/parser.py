@@ -211,7 +211,8 @@ def parse(
         with open(r"data/raw/filter.dat", "r", encoding="utf8") as f:
             for line in f.readlines():
                 line = line.strip()
-                del parsed_combined[line]
+                if line in parsed_combined:
+                    del parsed_combined[line]
             if verbose:
                 print(
                     "Removed filtered data: "
