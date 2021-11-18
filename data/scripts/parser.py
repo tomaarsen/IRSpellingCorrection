@@ -121,6 +121,11 @@ class HolbrookParser(DollarParser):
         return [" ".join(wrong.split(" ")[:-1]) for wrong in wrongs.split("\n")]
 
 
+def merge(d1: DefaultDict[str, Set[str]], d2: DefaultDict[str, Set[str]]):
+    """Merge values of `d2` into `d1`."""
+    for key, value in d2.items():
+        d1[key] |= value
+
 def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
     """Parse a set of the raw data, and optionally write to `processed/parsed.json`.
 
@@ -133,13 +138,10 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
         corrections.
     :rtype: Dict[str, Tuple[str]]
     """
-    parsed_combined = dict()
+    parsed_combined = defaultdict(set)
 
     if data_flag // WIKIPEDIA:
-        parsed_combined = {
-            **parsed_combined,
-            **WikipediaParser("data/raw/wikipedia.dat").parse(),
-        }
+        merge(parsed_combined, WikipediaParser("data/raw/wikipedia.dat").parse())
         print(
             "Added Wikipedia data: "
             f"Corpus now contains {len(parsed_combined)} misspellings."
@@ -147,10 +149,7 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
         data_flag %= WIKIPEDIA
 
     if data_flag // BIRKBECK:
-        parsed_combined = {
-            **parsed_combined,
-            **DollarParser("data/raw/birkbeck.dat").parse(),
-        }
+        merge(parsed_combined, DollarParser("data/raw/birkbeck.dat").parse())
         print(
             "Added Birkbeck data: "
             f"Corpus now contains {len(parsed_combined)} misspellings."
@@ -158,10 +157,7 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
         data_flag %= BIRKBECK
 
     if data_flag // HOLBROOK:
-        parsed_combined = {
-            **parsed_combined,
-            **HolbrookParser("data/raw/holbrook.dat").parse(),
-        }
+        merge(parsed_combined, HolbrookParser("data/raw/holbrook.dat").parse())
         print(
             "Added Holbrook data: "
             f"Corpus now contains {len(parsed_combined)} misspellings."
@@ -169,20 +165,18 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
         data_flag %= HOLBROOK
 
     if data_flag // ASPELL:
-        parsed_combined = {
-            **parsed_combined,
-            **DollarParser("data/raw/aspell.dat").parse(),
-        }
+        merge(parsed_combined, DollarParser("data/raw/aspell.dat").parse())
         print(
             "Added Aspell data: "
             f"Corpus now contains {len(parsed_combined)} misspellings."
         )
         data_flag %= ASPELL
 
-    parsed_combined = {key: tuple(value) for key, value in parsed_combined.items()}
+    parsed_combined = {key: tuple(sorted(value)) for key, value in parsed_combined.items()}
 
-    with open(r"data/processed/parsed.json", "w", encoding="utf8") as f:
-        json.dump(parsed_combined, f, indent=4)
+    if write:
+        with open(r"data/processed/parsed.json", "w", encoding="utf8") as f:
+            json.dump(parsed_combined, f, indent=4)
 
     return parsed_combined
 
