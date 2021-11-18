@@ -115,9 +115,12 @@ class HolbrookParser(DollarParser):
         Artair 1
         $America
         American 1
-
-    TODO: Handle "?" cases
     """
+
+    def parse_corrects(self, corrects: str) -> List[str]:
+        if corrects == "?":
+            return []
+        return [corrects]
 
     def parse_wrongs(self, wrongs: str) -> List[str]:
         return [
