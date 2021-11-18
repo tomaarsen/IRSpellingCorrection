@@ -144,7 +144,10 @@ def merge(d1: DefaultDict[str, Set[str]], d2: DefaultDict[str, Set[str]]):
 
 
 def parse(
-    data_flag: int, write: bool = False, verbose: bool = False
+    data_flag: int,
+    write: bool = False,
+    verbose: bool = False,
+    apply_filter: bool = True,
 ) -> Dict[str, Tuple[str]]:
     """Parse a set of the raw data, and optionally write to `processed/parsed.json`.
 
@@ -155,6 +158,9 @@ def parse(
     :type write: bool, optional
     :param verbose: Whether to print additional information. defaults to False
     :type verbose: bool, optional
+    :param apply_filter: Whether to apply a manual filter from `data/raw/filter.dat` on the
+        processed data. This is very much recommended. defaults to True
+    :type apply_filter: bool, optional
     :return: The parsed data as a mapping from misspellings to a tuple of potential
         corrections.
     :rtype: Dict[str, Tuple[str]]
@@ -201,6 +207,17 @@ def parse(
         key: tuple(sorted(value)) for key, value in parsed_combined.items()
     }
 
+    if apply_filter:
+        with open(r"data/raw/filter.dat", "r", encoding="utf8") as f:
+            for line in f.readlines():
+                line = line.strip()
+                del parsed_combined[line]
+            if verbose:
+                print(
+                    "Removed filtered data: "
+                    f"Corpus now contains {len(parsed_combined)} misspellings."
+                )
+
     if write:
         with open(r"data/processed/parsed.json", "w", encoding="utf8") as f:
             json.dump(parsed_combined, f, indent=4)
@@ -208,24 +225,34 @@ def parse(
     return parsed_combined
 
 
-def parse_all(write: bool = False, verbose: bool = False) -> Dict[str, Tuple[str]]:
+def parse_all(
+    write: bool = False, verbose: bool = False, apply_filter: bool = True
+) -> Dict[str, Tuple[str]]:
     """Parse all raw data, and optionally write to `processed/parsed.json`.
 
     :param write: Whether to write output to `processed/parsed.json`, defaults to False
     :type write: bool, optional
     :param verbose: Whether to print additional information. defaults to False
     :type verbose: bool, optional
+    :param apply_filter: Whether to apply a manual filter from `data/raw/filter.dat` on the
+        processed data. This is very much recommended. defaults to True
+    :type apply_filter: bool, optional
     :return: The parsed data as a mapping from misspellings to a tuple of potential
         corrections.
     :rtype: Dict[str, Tuple[str]]
     """
-    return parse(ASPELL + WIKIPEDIA + BIRKBECK + HOLBROOK, write=write, verbose=verbose)
+    return parse(
+        ASPELL + WIKIPEDIA + BIRKBECK + HOLBROOK,
+        write=write,
+        verbose=verbose,
+        apply_filter=apply_filter,
+    )
 
 
 def all_combinations():
     """Return a mapping of `data_flag` to `parse(data_flag)`,
     with all possible combinations of misspellings data.
-    
+
     TODO: Consider an option to start at 0, for no misspellings.
     """
     return {i: parse(i, write=False, verbose=False) for i in range(1, 16)}
