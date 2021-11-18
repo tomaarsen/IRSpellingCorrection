@@ -224,7 +224,10 @@ def parse_all(write: bool = False, verbose: bool = False) -> Dict[str, Tuple[str
 
 def all_combinations():
     """Return a mapping of `data_flag` to `parse(data_flag)`,
-    with all possible combinations of misspellings data."""
+    with all possible combinations of misspellings data.
+    
+    TODO: Consider an option to start at 0, for no misspellings.
+    """
     return {i: parse(i, write=False, verbose=False) for i in range(1, 16)}
 
 
