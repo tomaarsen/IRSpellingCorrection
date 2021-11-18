@@ -51,6 +51,9 @@ class Parser:
 
         :rtype: DefaultDict[str, Set[str]]
         """
+        if self.parsed:
+            return self.parsed
+
         with open(self.filename, "r", encoding="utf8") as f:
             for match in self.pattern.finditer(f.read()):
                 corrects = self.parse_corrects(match.group("correct"))
@@ -127,6 +130,10 @@ class HolbrookParser(DollarParser):
             " ".join(wrong.split(" ")[:-1]) for wrong in wrongs.split("\n") if wrong
         ]
 
+WIKIPEDIA_PARSER = WikipediaParser("data/raw/wikipedia.dat")
+BIRKBECK_PARSER = DollarParser("data/raw/birkbeck.dat")
+HOLBROOK_PARSER = HolbrookParser("data/raw/holbrook.dat")
+ASPELL_PARSER = DollarParser("data/raw/aspell.dat")
 
 def merge(d1: DefaultDict[str, Set[str]], d2: DefaultDict[str, Set[str]]):
     """Merge values of `d2` into `d1`."""
@@ -149,7 +156,7 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
     parsed_combined = defaultdict(set)
 
     if data_flag // WIKIPEDIA:
-        merge(parsed_combined, WikipediaParser("data/raw/wikipedia.dat").parse())
+        merge(parsed_combined, WIKIPEDIA_PARSER.parse())
         print(
             "Added Wikipedia data: "
             f"Corpus now contains {len(parsed_combined)} misspellings."
@@ -157,7 +164,7 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
         data_flag %= WIKIPEDIA
 
     if data_flag // BIRKBECK:
-        merge(parsed_combined, DollarParser("data/raw/birkbeck.dat").parse())
+        merge(parsed_combined, BIRKBECK_PARSER.parse())
         print(
             "Added Birkbeck data: "
             f"Corpus now contains {len(parsed_combined)} misspellings."
@@ -165,7 +172,7 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
         data_flag %= BIRKBECK
 
     if data_flag // HOLBROOK:
-        merge(parsed_combined, HolbrookParser("data/raw/holbrook.dat").parse())
+        merge(parsed_combined, HOLBROOK_PARSER.parse())
         print(
             "Added Holbrook data: "
             f"Corpus now contains {len(parsed_combined)} misspellings."
@@ -173,7 +180,7 @@ def parse(data_flag: int, write: bool = False) -> Dict[str, Tuple[str]]:
         data_flag %= HOLBROOK
 
     if data_flag // ASPELL:
-        merge(parsed_combined, DollarParser("data/raw/aspell.dat").parse())
+        merge(parsed_combined, ASPELL_PARSER.parse())
         print(
             "Added Aspell data: "
             f"Corpus now contains {len(parsed_combined)} misspellings."
@@ -203,5 +210,14 @@ def parse_all(write: bool = False) -> Dict[str, Tuple[str]]:
     return parse(ASPELL + WIKIPEDIA + BIRKBECK + HOLBROOK, write=write)
 
 
+def all_combinations():
+    """Return a mapping of `data_flag` to `parse(data_flag)`,
+    with all possible combinations of misspellings data."""
+    return {
+        i: parse(i, write=False)
+        for i in range(1, 16)
+    }
+
 if __name__ == "__main__":
     parse_all(write=True)
+    # output = all_combinations()
