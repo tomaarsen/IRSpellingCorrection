@@ -130,3 +130,12 @@ dmypy.json
 
 # Ignore IDE specific data
 .vscode/
+
+# Don't commit the indexes
+data/indexes
+
+# Allow us to make a folder with archived files that we don't wish to push to git
+archived
+
+# Don't push the data/output folder, as the runs are too big for GitHub.
+data/output
