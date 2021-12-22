@@ -1,13 +1,5 @@
 import json
 
-#Open the files consting all english words and store it in english_words
-
-# with open('data/raw/english_words/words.txt') as word_file1:
-#     all_words = set(word.strip().lower() for word in word_file1)
-
-# with open('data/raw/english_words/words_subset1.txt') as word_file2:
-#     all_words_subset1 = set(word.strip().lower() for word in word_file2)
-
 with open('data/raw/english_words/words_subset2.txt') as word_file3:
     all_words_subset2 = set(word.strip().lower() for word in word_file3)
 
