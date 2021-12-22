@@ -38,7 +38,7 @@ powershell ./tools/evaluate_relative_ranks.ps1
 
 Experiment 1 and experiment 2 produces `data/output/ranking_eval.txt` and `data/output/ranking_relative_eval.txt`, respectively. As the files in `data/output` folder are too large, this folder was not uploaded to git. Instead, I copied these files over to [relative_eval.txt](ranking_eval.txt) and [relative_relative_eval.txt](relative_relative_eval.txt).
 
-#### Authors
+### Authors
 - Tom Aarsen
 - Tijn Berns
 - Daan Derks
